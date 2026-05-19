@@ -1,0 +1,1333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mira Oyama — Selected Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #06070a;
+      --ink-0: #ececf1;
+      --ink-1: #9ea0ad;
+      --ink-2: #595c69;
+      --ink-3: #34363f;
+      --accent: #b7e3ff;
+      --hot: #ff7383;
+      --line: rgba(255,255,255,0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      background: var(--bg-0);
+      color: var(--ink-0);
+      overflow: hidden;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background:
+        radial-gradient(70% 55% at 50% 42%, #161824 0%, #0a0b10 55%, #04050a 100%);
+    }
+    body::after {
+      /* subtle vignette */
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(110% 80% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+      z-index: 2;
+    }
+
+    #stage {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100vh;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+      z-index: 1;
+    }
+    #stage:active { cursor: grabbing; }
+
+    /* ---------- chrome UI ---------- */
+    .ui {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 360px 1fr 320px;
+      padding: 28px 36px;
+      gap: 24px;
+      z-index: 3;
+    }
+    .ui > * { pointer-events: auto; }
+
+    .top {
+      grid-row: 1; grid-column: 1 / -1;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .left  { grid-row: 2; grid-column: 1; align-self: end; }
+    .right { grid-row: 2; grid-column: 3; align-self: end; text-align: right; }
+    .bottom {
+      grid-row: 3; grid-column: 1 / -1;
+      display: flex; justify-content: space-between; align-items: end;
+    }
+
+    .mark {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px; letter-spacing: 0.06em;
+      color: var(--ink-1);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .mark strong { color: var(--ink-0); font-weight: 600; letter-spacing: 0.14em; }
+    .mark .sep { color: var(--ink-3); }
+
+    .lead {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.28em;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      margin: 0 0 18px 0;
+    }
+    h1.title {
+      font-family: 'Instrument Serif', 'Times New Roman', serif;
+      font-size: clamp(40px, 4.4vw, 72px);
+      line-height: 0.96; font-weight: 400;
+      margin: 0 0 18px 0;
+      letter-spacing: -0.02em;
+    }
+    h1.title em { font-style: italic; color: var(--accent); }
+    .blurb {
+      color: var(--ink-1);
+      max-width: 340px;
+      font-size: 14px; line-height: 1.6;
+    }
+
+    /* category list */
+    nav.cats {
+      display: flex; flex-direction: column;
+      gap: 2px;
+      align-items: flex-end;
+    }
+    nav.cats button {
+      pointer-events: auto;
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: var(--ink-1);
+      font: inherit;
+      padding: 6px 0;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 30px 10px 1fr;
+      align-items: baseline;
+      gap: 14px;
+      transition: color 0.25s ease;
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px;
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    nav.cats button > .idx {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.1em;
+      text-align: right;
+    }
+    nav.cats button > .dot {
+      width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+      opacity: 0.18;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      background: var(--ink-2);
+      align-self: center;
+      transform: translateY(-2px);
+    }
+    nav.cats button[data-action="break"] > .dot { background: var(--hot); }
+    nav.cats button[data-action="solve"] > .dot { background: var(--accent); }
+    nav.cats button > .name { text-align: left; }
+    nav.cats button:hover, nav.cats button:focus-visible { color: var(--ink-0); outline: none; }
+    nav.cats button:hover .dot, nav.cats button.active .dot { opacity: 1; transform: translateY(-2px) scale(1.15); }
+    nav.cats button:hover .idx, nav.cats button.active .idx { color: var(--ink-1); }
+    nav.cats button.active { color: var(--ink-0); }
+    nav.cats button:disabled { cursor: progress; opacity: 0.55; }
+
+    .legend {
+      display: flex; gap: 18px; justify-content: flex-end;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--ink-2);
+      letter-spacing: 0.18em; text-transform: uppercase;
+      margin-top: 20px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .legend .s { background: var(--accent); }
+    .legend .b { background: var(--hot); }
+
+    /* status bar */
+    .status {
+      display: flex; gap: 28px; align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-2);
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
+    .status .live {
+      color: var(--ink-1);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .status .live::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: #6ddf8b;
+      box-shadow: 0 0 8px rgba(109,223,139,0.7);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .status #state-readout {
+      color: var(--ink-0);
+      min-width: 240px;
+    }
+    .status #state-readout .verb { color: var(--ink-2); margin-right: 8px; }
+
+    @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    .hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-3);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      display: flex; gap: 14px; align-items: center;
+    }
+
+    /* action buttons */
+    .controls { display: flex; gap: 10px; align-items: center; }
+    .controls button {
+      appearance: none;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--line);
+      color: var(--ink-0);
+      padding: 11px 20px 11px 16px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.25s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .controls button:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .controls button:active { transform: translateY(1px); }
+    .controls button:disabled { opacity: 0.4; cursor: progress; }
+    .controls button .glyph {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px;
+      color: var(--accent);
+    }
+    .controls button .glyph svg { width: 100%; height: 100%; }
+    .controls button .count {
+      font-size: 9px; color: var(--ink-2); letter-spacing: 0.18em;
+      margin-left: 4px;
+    }
+    .hint kbd {
+      font-family: inherit;
+      font-size: 9px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--ink-1);
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* drift label that appears mid-animation */
+    .drift {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.4em;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      opacity: 0; transition: opacity 0.5s ease;
+      z-index: 4;
+      mix-blend-mode: screen;
+    }
+    .drift.show { opacity: 0.65; }
+
+    /* tiny tag for selected category, lives under the title */
+    .selected-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      margin-top: 18px;
+      display: flex; gap: 10px; align-items: center;
+      min-height: 16px;
+    }
+    .selected-tag b { color: var(--ink-0); font-weight: 500; }
+    .selected-tag .bar { width: 18px; height: 1px; background: var(--ink-3); display: inline-block; }
+
+    @media (max-width: 980px) {
+      .ui { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; padding: 20px; }
+      .top { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .left { grid-row: 2; align-self: start; }
+      .right { grid-row: 4; align-self: end; text-align: right; }
+      h1.title { font-size: 36px; }
+      .blurb { display: none; }
+      nav.cats button { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+
+  <div class="ui">
+    <div class="top">
+      <div class="mark">
+        <strong>MIRA&nbsp;OYAMA</strong>
+        <span class="sep">/</span>
+        <span>selected works · 2019 – 2026</span>
+      </div>
+      <div class="mark">
+        <span>↗ &nbsp;available for commissions</span>
+      </div>
+    </div>
+
+    <div class="left">
+      <p class="lead">Index 01 — Portfolio</p>
+      <h1 class="title">A cube of<br/>everything <em>I've</em><br/>ever made.</h1>
+      <p class="blurb">Six surfaces, twenty-seven pieces, one continuous argument. Pick a category — some will fall into place, others will fly apart. Drag the cube to look around.</p>
+      <div class="selected-tag" id="selected-tag">
+        <span class="bar"></span><span>nothing selected yet</span>
+      </div>
+    </div>
+
+    <div class="right">
+      <p class="lead">Categories</p>
+      <nav class="cats" id="cats">
+        <button data-action="solve" data-name="Work"><span class="idx">01</span><span class="dot"></span><span class="name">Work</span></button>
+        <button data-action="break" data-name="Lab"><span class="idx">02</span><span class="dot"></span><span class="name">Lab</span></button>
+        <button data-action="solve" data-name="Writing"><span class="idx">03</span><span class="dot"></span><span class="name">Writing</span></button>
+        <button data-action="break" data-name="Archive"><span class="idx">04</span><span class="dot"></span><span class="name">Archive</span></button>
+        <button data-action="solve" data-name="About"><span class="idx">05</span><span class="dot"></span><span class="name">About</span></button>
+        <button data-action="break" data-name="Contact"><span class="idx">06</span><span class="dot"></span><span class="name">Contact</span></button>
+      </nav>
+      <div class="legend">
+        <span><i class="s"></i> solve</span>
+        <span><i class="b"></i> shatter</span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="controls">
+        <button id="shuffle-btn" type="button" title="Shuffle the cube">
+          <span class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 3h5v5"/>
+              <path d="M4 20 21 3"/>
+              <path d="M21 16v5h-5"/>
+              <path d="m15 15 6 6"/>
+              <path d="M4 4l5 5"/>
+            </svg>
+          </span>
+          <span>Shuffle</span>
+          <span class="count" id="shuffle-count">×0</span>
+        </button>
+      </div>
+      <div class="status">
+        <span class="live">SYSTEM&nbsp;ONLINE</span>
+        <span>Kyoto · <span id="clock">--:--</span> JST</span>
+        <span id="state-readout"><span class="verb">state</span>booting</span>
+      </div>
+      <div class="hint">
+        <span>drag to rotate</span>
+        <kbd>↺</kbd>
+      </div>
+    </div>
+  </div>
+
+  <div class="drift" id="drift">— rendering —</div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+    // ---------- renderer / scene ----------
+    const canvas = document.getElementById('stage');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(28, innerWidth/innerHeight, 0.1, 100);
+    camera.position.set(0, 0.4, 14);
+    camera.lookAt(0, 0, 0);
+
+    // env map for glassy reflections — procedural nature scene
+    const pmrem = new THREE.PMREMGenerator(renderer);
+
+    function createNatureEnvScene() {
+      const s = new THREE.Scene();
+
+      // sky dome with gradient
+      const skyGeo = new THREE.SphereGeometry(60, 64, 32);
+      const skyMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        uniforms: {
+          topColor:     { value: new THREE.Color(0x3a5d86) },
+          midColor:     { value: new THREE.Color(0x9bbedf) },
+          horizonColor: { value: new THREE.Color(0xe8b78a) },
+          groundColor:  { value: new THREE.Color(0x1c2620) },
+        },
+        vertexShader: `
+          varying vec3 vPos;
+          void main() {
+            vPos = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 topColor;
+          uniform vec3 midColor;
+          uniform vec3 horizonColor;
+          uniform vec3 groundColor;
+          varying vec3 vPos;
+          void main() {
+            float h = normalize(vPos).y;
+            vec3 col;
+            if (h > 0.0) {
+              float t1 = smoothstep(0.0, 0.18, h);
+              float t2 = smoothstep(0.15, 0.55, h);
+              col = mix(horizonColor, midColor, t1);
+              col = mix(col, topColor, t2);
+            } else {
+              col = mix(horizonColor, groundColor, smoothstep(0.0, -0.25, h));
+            }
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+      });
+      s.add(new THREE.Mesh(skyGeo, skyMat));
+
+      // deterministic-ish random so reflections look the same each load
+      let seed = 1;
+      const rng = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+      // sun + layered halo for soft glow
+      const sunPos = new THREE.Vector3(22, 9, -24);
+      const sun = new THREE.Mesh(
+        new THREE.SphereGeometry(2.6, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xfff1cf })
+      );
+      sun.position.copy(sunPos);
+      s.add(sun);
+      const halo1 = new THREE.Mesh(
+        new THREE.SphereGeometry(5.5, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffd9a6, transparent: true, opacity: 0.38 })
+      );
+      halo1.position.copy(sunPos);
+      s.add(halo1);
+      const halo2 = new THREE.Mesh(
+        new THREE.SphereGeometry(10, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xf3c898, transparent: true, opacity: 0.14 })
+      );
+      halo2.position.copy(sunPos);
+      s.add(halo2);
+
+      // far mountain range (faint, bluish, large)
+      for (let i = 0; i < 14; i++) {
+        const angle = (i / 14) * Math.PI * 2 + 0.6;
+        const r = 52 + rng() * 8;
+        const h = 14 + rng() * 9;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(11 + rng() * 5, h, 4),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.6, 0.18 + rng() * 0.06, 0.32 + rng() * 0.06),
+          })
+        );
+        cone.position.set(Math.cos(angle) * r, h / 2 - 5, Math.sin(angle) * r);
+        cone.rotation.y = rng() * Math.PI;
+        s.add(cone);
+      }
+
+      // mid mountain range — larger, slightly warmer
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2 + 0.4;
+        const r = 38 + rng() * 6;
+        const h = 11 + rng() * 7;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(9 + rng() * 3, h, 4),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.58, 0.16 + rng() * 0.07, 0.24 + rng() * 0.07),
+          })
+        );
+        cone.position.set(Math.cos(angle) * r, h / 2 - 5, Math.sin(angle) * r);
+        cone.rotation.y = rng() * Math.PI;
+        s.add(cone);
+      }
+
+      // near hills — lower rolling shapes
+      for (let i = 0; i < 9; i++) {
+        const angle = (i / 9) * Math.PI * 2 + 0.2;
+        const r = 26 + rng() * 4;
+        const dome = new THREE.Mesh(
+          new THREE.SphereGeometry(6 + rng() * 3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.32, 0.18 + rng() * 0.08, 0.18 + rng() * 0.08),
+          })
+        );
+        dome.position.set(Math.cos(angle) * r, -3.5, Math.sin(angle) * r);
+        s.add(dome);
+      }
+
+      // closer ring of conifers — darker, varied heights, some warm-tinted (autumn)
+      for (let i = 0; i < 64; i++) {
+        const angle = (i / 64) * Math.PI * 2 + rng() * 0.18;
+        const r = 14 + rng() * 10;
+        const h = 4 + rng() * 6;
+        const isAutumn = rng() < 0.12;
+        const tree = new THREE.Mesh(
+          new THREE.ConeGeometry(1.1 + rng() * 0.9, h, 6),
+          new THREE.MeshBasicMaterial({
+            color: isAutumn
+              ? new THREE.Color().setHSL(0.06 + rng() * 0.05, 0.45 + rng() * 0.2, 0.28 + rng() * 0.1)
+              : new THREE.Color().setHSL(0.27 + rng() * 0.06, 0.25 + rng() * 0.15, 0.14 + rng() * 0.10),
+          })
+        );
+        tree.position.set(Math.cos(angle) * r, h / 2 - 3, Math.sin(angle) * r);
+        s.add(tree);
+
+        // tree trunk (thin cylinder) for a tiny bit of structure
+        if (rng() < 0.4) {
+          const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.12, 0.16, 1.2, 8),
+            new THREE.MeshBasicMaterial({ color: 0x2a1e15 })
+          );
+          trunk.position.set(tree.position.x, tree.position.y - h/2 - 0.5, tree.position.z);
+          s.add(trunk);
+        }
+      }
+
+      // foreground low bushes / rocks — closest detail band
+      for (let i = 0; i < 36; i++) {
+        const angle = rng() * Math.PI * 2;
+        const r = 8 + rng() * 4.5;
+        const isRock = rng() < 0.35;
+        const obj = new THREE.Mesh(
+          isRock
+            ? new THREE.DodecahedronGeometry(0.6 + rng() * 0.5, 0)
+            : new THREE.SphereGeometry(0.9 + rng() * 0.6, 10, 6),
+          new THREE.MeshBasicMaterial({
+            color: isRock
+              ? new THREE.Color().setHSL(0.07, 0.05, 0.22 + rng() * 0.1)
+              : new THREE.Color().setHSL(0.3, 0.25 + rng() * 0.15, 0.18 + rng() * 0.1),
+          })
+        );
+        obj.position.set(Math.cos(angle) * r, -2.5 + rng() * 0.4, Math.sin(angle) * r);
+        obj.scale.set(1, 0.55 + rng() * 0.4, 1);
+        s.add(obj);
+      }
+
+      // grass / forest floor with subtle warm patches
+      const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(60, 64),
+        new THREE.MeshBasicMaterial({ color: 0x2b3528 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -3.2;
+      s.add(ground);
+
+      // warm sandy clearing nearer the sun
+      const clearing = new THREE.Mesh(
+        new THREE.CircleGeometry(8, 32),
+        new THREE.MeshBasicMaterial({ color: 0x8a6c4a, transparent: true, opacity: 0.65 })
+      );
+      clearing.rotation.x = -Math.PI / 2;
+      clearing.position.set(10, -3.18, -12);
+      s.add(clearing);
+
+      // clouds: more layered, brighter near the sun, cooler away
+      for (let i = 0; i < 16; i++) {
+        const angle = rng() * Math.PI * 2;
+        const distToSun = Math.abs(angle - Math.atan2(sunPos.z, sunPos.x));
+        const warm = distToSun < 1.2;
+        const cloud = new THREE.Mesh(
+          new THREE.SphereGeometry(2.5 + rng() * 2.5, 14, 10),
+          new THREE.MeshBasicMaterial({
+            color: warm ? 0xfde4c0 : 0xd0d6dc,
+            transparent: true,
+            opacity: 0.6 + rng() * 0.25,
+          })
+        );
+        cloud.position.set(
+          Math.cos(angle) * (26 + rng() * 14),
+          10 + rng() * 11,
+          Math.sin(angle) * (26 + rng() * 14)
+        );
+        cloud.scale.set(2.6 + rng() * 1.4, 0.45 + rng() * 0.2, 1.5 + rng());
+        s.add(cloud);
+      }
+
+      // a still lake — reflective teal patch beyond the trees
+      const water = new THREE.Mesh(
+        new THREE.CircleGeometry(16, 48),
+        new THREE.MeshBasicMaterial({ color: 0x6b94a4, transparent: true, opacity: 0.75 })
+      );
+      water.rotation.x = -Math.PI / 2;
+      water.position.set(-14, -3.1, 8);
+      s.add(water);
+
+      // a brighter highlight strip on the water nearest the sun direction
+      const waterShine = new THREE.Mesh(
+        new THREE.PlaneGeometry(14, 2.2),
+        new THREE.MeshBasicMaterial({ color: 0xf6e5c4, transparent: true, opacity: 0.45 })
+      );
+      waterShine.rotation.x = -Math.PI / 2;
+      waterShine.position.set(-14, -3.05, 8);
+      s.add(waterShine);
+
+      // a few tiny bird specks high in the sky
+      for (let i = 0; i < 8; i++) {
+        const a = rng() * Math.PI * 2;
+        const r = 30 + rng() * 10;
+        const bird = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.4, 0.12),
+          new THREE.MeshBasicMaterial({ color: 0x2b2f36, side: THREE.DoubleSide })
+        );
+        bird.position.set(Math.cos(a) * r, 14 + rng() * 6, Math.sin(a) * r);
+        bird.rotation.y = rng() * Math.PI;
+        s.add(bird);
+      }
+
+      return s;
+    }
+
+    const natureScene = createNatureEnvScene();
+    scene.environment = pmrem.fromScene(natureScene, 0).texture;
+
+    // lights — add directionals for crisp specular streaks
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(5, 7, 6);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x88b6ff, 0.9);
+    rim.position.set(-6, -1, -4);
+    scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xffc89c, 0.35);
+    fill.position.set(2, -4, 3);
+    scene.add(fill);
+
+    // ---------- cube ----------
+    const viewGroup = new THREE.Group(); // user drag rotation
+    scene.add(viewGroup);
+
+    const cubeRoot = new THREE.Group();
+    viewGroup.add(cubeRoot);
+
+    // Mirror cube proportions — each axis cut so slabs are 0.65 / 1.00 / 1.35
+    // (all three axes offset the same direction, the canonical Mirror Blocks pattern)
+    const CUTS = {
+      x: [-1.5, -0.85, 0.15, 1.5],
+      y: [-1.5, -0.85, 0.15, 1.5],
+      z: [-1.5, -0.85, 0.15, 1.5],
+    };
+
+    // outer chrome sticker / shell
+    const cubieMat = new THREE.MeshPhysicalMaterial({
+      color: 0xe2e3e7,
+      metalness: 1.0,
+      roughness: 0.05,
+      envMapIntensity: 1.4,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.08,
+    });
+
+    // dark plastic body underneath the chrome stickers — visible on inner mechanical parts
+    const innerMat = new THREE.MeshStandardMaterial({
+      color: 0x141417,
+      metalness: 0.15,
+      roughness: 0.78,
+      envMapIntensity: 0.6,
+    });
+    // chamfered plastic for the cubie inward foot — slightly lighter to read separately
+    const innerMatLight = new THREE.MeshStandardMaterial({
+      color: 0x202024,
+      metalness: 0.18,
+      roughness: 0.72,
+      envMapIntensity: 0.7,
+    });
+    // brushed steel for screws + spider arms
+    const screwMat = new THREE.MeshStandardMaterial({
+      color: 0x8a8c93,
+      metalness: 0.92,
+      roughness: 0.32,
+      envMapIntensity: 1.0,
+    });
+    // springs (slightly warmer, less polished)
+    const springMat = new THREE.MeshStandardMaterial({
+      color: 0xa0a4ac,
+      metalness: 0.95,
+      roughness: 0.42,
+      envMapIntensity: 0.9,
+    });
+
+    function makeBox(w, h, d) {
+      const r = Math.min(0.045, Math.min(w, h, d) * 0.2);
+      return new RoundedBoxGeometry(w, h, d, 3, r);
+    }
+
+    // ---------- spider / core mechanism ----------
+    // sits at cube origin; the 6 face-center cubies "snap" onto its spindles
+    function buildSpider() {
+      const g = new THREE.Group();
+
+      // central hub: a chamfered block
+      const hubBox = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), innerMat);
+      g.add(hubBox);
+      const hubSphere = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 18), innerMat);
+      g.add(hubSphere);
+
+      const axes = [
+        { axis: 'x', dir:  1 }, { axis: 'x', dir: -1 },
+        { axis: 'y', dir:  1 }, { axis: 'y', dir: -1 },
+        { axis: 'z', dir:  1 }, { axis: 'z', dir: -1 },
+      ];
+      const orient = (mesh, axis) => {
+        if (axis === 'x') mesh.rotation.z = Math.PI / 2;
+        else if (axis === 'z') mesh.rotation.x = Math.PI / 2;
+      };
+      const placeOnAxis = (mesh, axis, dir, offset) => {
+        const v = { x: 0, y: 0, z: 0 };
+        v[axis] = dir * offset;
+        mesh.position.set(v.x, v.y, v.z);
+      };
+
+      for (const { axis, dir } of axes) {
+        // spindle: thin rod extending out
+        const spindle = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 1.05, 16), screwMat);
+        placeOnAxis(spindle, axis, dir, 0.55);
+        orient(spindle, axis);
+        g.add(spindle);
+
+        // collar at base of spindle
+        const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.1, 18), innerMat);
+        placeOnAxis(collar, axis, dir, 0.30);
+        orient(collar, axis);
+        g.add(collar);
+
+        // spring: stack of thin torus rings around the spindle
+        for (let i = 0; i < 5; i++) {
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.022, 8, 22), springMat);
+          placeOnAxis(ring, axis, dir, 0.42 + i * 0.085);
+          // torus's hole is along its local Z; align hole to the spindle axis
+          if (axis === 'x') ring.rotation.y = Math.PI / 2;
+          else if (axis === 'y') ring.rotation.x = Math.PI / 2;
+          // z axis: no rotation needed
+          g.add(ring);
+        }
+
+        // screw head at the tip — wider disc + phillips slot
+        const head = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.20, 0.12, 18), screwMat);
+        placeOnAxis(head, axis, dir, 1.06);
+        orient(head, axis);
+        g.add(head);
+
+        // phillips cross slot (two thin recessed bars)
+        const slotA = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.24), innerMat);
+        const slotB = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.04), innerMat);
+        placeOnAxis(slotA, axis, dir, 1.12);
+        placeOnAxis(slotB, axis, dir, 1.12);
+        if (axis === 'x') {
+          slotA.rotation.z = Math.PI / 2; slotB.rotation.z = Math.PI / 2;
+        } else if (axis === 'z') {
+          slotA.rotation.x = Math.PI / 2; slotB.rotation.x = Math.PI / 2;
+        }
+        g.add(slotA);
+        g.add(slotB);
+      }
+
+      return g;
+    }
+
+    const spider = buildSpider();
+    cubeRoot.add(spider);
+
+    // ---------- veins / branches (only visible during shatter) ----------
+    const veinMat = new THREE.MeshStandardMaterial({
+      color: 0x2a060e,
+      emissive: 0xd83254,
+      emissiveIntensity: 0.0,
+      metalness: 0.15,
+      roughness: 0.5,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    });
+    const veinsGroup = new THREE.Group();
+    veinsGroup.visible = false;
+    cubeRoot.add(veinsGroup);
+
+    function buildVeins() {
+      // deterministic seeded RNG so the vein tree is the same each load
+      let vseed = 13;
+      const vrng = () => { vseed = (vseed * 16807) % 2147483647; return vseed / 2147483647; };
+
+      // primary outward directions, spread on the sphere
+      const primaryDirs = [];
+      const N = 16;
+      for (let i = 0; i < N; i++) {
+        // fibonacci-ish distribution
+        const phi  = Math.acos(1 - 2 * (i + 0.5) / N);
+        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+        primaryDirs.push(new THREE.Vector3(
+          Math.sin(phi) * Math.cos(theta),
+          Math.cos(phi),
+          Math.sin(phi) * Math.sin(theta),
+        ));
+      }
+
+      function branch(start, dir, length, radius, depth) {
+        if (depth === 0 || length < 0.04) return;
+        const end = start.clone().add(dir.clone().multiplyScalar(length));
+
+        // gentle bow for organic feel — small
+        let perp = new THREE.Vector3(-dir.y, dir.x, 0);
+        if (perp.lengthSq() < 0.01) perp.set(1, 0, 0);
+        perp.normalize();
+        const bow = length * 0.10 * (vrng() - 0.5);
+
+        const segs = 6;
+        const points = [];
+        for (let i = 0; i <= segs; i++) {
+          const t = i / segs;
+          const p = start.clone().lerp(end, t);
+          p.add(perp.clone().multiplyScalar(Math.sin(t * Math.PI) * bow));
+          points.push(p);
+        }
+        const curve = new THREE.CatmullRomCurve3(points);
+        const tube = new THREE.Mesh(
+          // radialSegments: 3 — sharp triangular cross-section reads as thin filament, not pipe
+          new THREE.TubeGeometry(curve, 14, radius, 3, false),
+          veinMat
+        );
+        veinsGroup.add(tube);
+
+        // small angular node where branches split (skip on tips)
+        if (depth > 1) {
+          const node = new THREE.Mesh(
+            new THREE.OctahedronGeometry(radius * 1.4, 0),
+            veinMat
+          );
+          node.position.copy(end);
+          veinsGroup.add(node);
+        }
+
+        // sub-branches — longer than the stub so the network reaches outward, but
+        // the branching points themselves stay clustered near the cube center
+        if (depth > 1) {
+          const subs = 2 + Math.floor(vrng() * 2);
+          for (let i = 0; i < subs; i++) {
+            const nd = dir.clone();
+            nd.x += (vrng() - 0.5) * 1.4;
+            nd.y += (vrng() - 0.5) * 1.4;
+            nd.z += (vrng() - 0.5) * 1.4;
+            nd.normalize();
+            branch(end, nd, length * (1.4 + vrng() * 0.5), radius * 0.65, depth - 1);
+          }
+        }
+      }
+
+      // central heart node — small octahedron, not a sphere
+      const heart = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.09, 0),
+        veinMat
+      );
+      veinsGroup.add(heart);
+
+      // short primary stubs — first splits happen close to the cube center
+      for (const d of primaryDirs) {
+        const len = 0.30 + vrng() * 0.25;
+        branch(new THREE.Vector3(0, 0, 0), d, len, 0.022, 3);
+      }
+    }
+    buildVeins();
+
+    // smooth continuous throb — no dark gaps, just a breathing pulse
+    function heartbeatAt(t) {
+      const period = 0.95;
+      const wave = Math.sin(t * Math.PI * 2 / period);
+      // remap from [-1, 1] to [0.55, 1.0] so the glow never goes dark
+      return 0.775 + wave * 0.225;
+    }
+
+    let veinsActive = false;
+    let pulseStartTime = 0;
+
+    async function fadeVeins(toOpacity, duration) {
+      const start = veinMat.opacity;
+      await tween(duration, e => {
+        veinMat.opacity = start + (toOpacity - start) * e;
+      });
+    }
+
+    // ---------- cubie builder with inner mechanical detail ----------
+    function buildCubie(sx, sy, sz, ix, iy, iz) {
+      const group = new THREE.Group();
+
+      // outer chrome shell
+      const chrome = new THREE.Mesh(makeBox(sx, sy, sz), cubieMat);
+      group.add(chrome);
+
+      // classify piece — how many faces are exposed?
+      const exposed = (ix !== 1 ? 1 : 0) + (iy !== 1 ? 1 : 0) + (iz !== 1 ? 1 : 0);
+      // inward direction in each axis (0 if this axis is centered)
+      const inX = ix === 0 ?  1 : ix === 2 ? -1 : 0;
+      const inY = iy === 0 ?  1 : iy === 2 ? -1 : 0;
+      const inZ = iz === 0 ?  1 : iz === 2 ? -1 : 0;
+
+      if (exposed === 1) {
+        // face-center piece — has a socket the spindle slots into.
+        // outward axis is the one with non-zero in*.
+        const outAxis = inX !== 0 ? 'x' : inY !== 0 ? 'y' : 'z';
+        const inwardSign = outAxis === 'x' ? inX : outAxis === 'y' ? inY : inZ;
+        const size = outAxis === 'x' ? sx : outAxis === 'y' ? sy : sz;
+
+        // socket: cylinder pointing inward, hollow look via slightly smaller inner cylinder
+        const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.5, 24), innerMat);
+        const sv = { x: 0, y: 0, z: 0 };
+        sv[outAxis] = inwardSign * (size * 0.5 - 0.05);
+        socket.position.set(sv.x, sv.y, sv.z);
+        if (outAxis === 'x') socket.rotation.z = Math.PI / 2;
+        else if (outAxis === 'z') socket.rotation.x = Math.PI / 2;
+        group.add(socket);
+
+        // inner bore (slightly darker, narrower) — gives socket a hole look
+        const bore = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.55, 16), innerMatLight);
+        bore.position.copy(socket.position);
+        bore.rotation.copy(socket.rotation);
+        group.add(bore);
+
+        // small interlocking rim around the socket where it meets the chrome shell
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.30, 0.04, 10, 28), innerMatLight);
+        const rv = { x: 0, y: 0, z: 0 };
+        rv[outAxis] = inwardSign * (size * 0.5 - 0.18);
+        rim.position.set(rv.x, rv.y, rv.z);
+        if (outAxis === 'x') rim.rotation.y = Math.PI / 2;
+        else if (outAxis === 'y') rim.rotation.x = Math.PI / 2;
+        group.add(rim);
+      } else if (exposed === 2) {
+        // edge piece — has a curved inward "foot" that hooks onto neighboring corners
+        const fw = sx * 0.55, fh = sy * 0.55, fd = sz * 0.55;
+        const foot = new THREE.Mesh(new THREE.BoxGeometry(fw, fh, fd), innerMat);
+        foot.position.set(
+          inX * (sx * 0.5 - fw * 0.42),
+          inY * (sy * 0.5 - fh * 0.42),
+          inZ * (sz * 0.5 - fd * 0.42),
+        );
+        group.add(foot);
+
+        // small tab perpendicular to the foot for the "hook" effect
+        const tab = new THREE.Mesh(
+          new THREE.BoxGeometry(fw * 0.6, fh * 0.6, fd * 0.6),
+          innerMatLight
+        );
+        tab.position.set(
+          inX * (sx * 0.5 - fw * 0.15),
+          inY * (sy * 0.5 - fh * 0.15),
+          inZ * (sz * 0.5 - fd * 0.15),
+        );
+        group.add(tab);
+      } else if (exposed === 3) {
+        // corner piece — has a larger 3-pronged inward foot
+        const fw = sx * 0.6, fh = sy * 0.6, fd = sz * 0.6;
+        const foot = new THREE.Mesh(new THREE.BoxGeometry(fw, fh, fd), innerMat);
+        foot.position.set(
+          inX * (sx * 0.5 - fw * 0.4),
+          inY * (sy * 0.5 - fh * 0.4),
+          inZ * (sz * 0.5 - fd * 0.4),
+        );
+        group.add(foot);
+
+        // three small prongs extending further into the cube interior (toward center)
+        const prongLen = 0.18;
+        const prongR = 0.06;
+        const dirs = [
+          ['x', inX], ['y', inY], ['z', inZ],
+        ];
+        for (const [pAxis, pDir] of dirs) {
+          const prong = new THREE.Mesh(
+            new THREE.CylinderGeometry(prongR, prongR, prongLen, 10),
+            innerMatLight
+          );
+          const pv = { x: foot.position.x, y: foot.position.y, z: foot.position.z };
+          pv[pAxis] += pDir * (prongLen * 0.5 + 0.05);
+          prong.position.set(pv.x, pv.y, pv.z);
+          if (pAxis === 'x') prong.rotation.z = Math.PI / 2;
+          else if (pAxis === 'z') prong.rotation.x = Math.PI / 2;
+          group.add(prong);
+        }
+      }
+
+      return { group, chrome };
+    }
+
+    const cubies = [];
+    const GAP = 0.014;
+    for (let ix = 0; ix < 3; ix++)
+      for (let iy = 0; iy < 3; iy++)
+        for (let iz = 0; iz < 3; iz++) {
+          // skip the very center — that slot is the spider/core
+          if (ix === 1 && iy === 1 && iz === 1) continue;
+
+          const sx = CUTS.x[ix+1] - CUTS.x[ix] - GAP*2;
+          const sy = CUTS.y[iy+1] - CUTS.y[iy] - GAP*2;
+          const sz = CUTS.z[iz+1] - CUTS.z[iz] - GAP*2;
+          const cx = (CUTS.x[ix+1] + CUTS.x[ix]) / 2;
+          const cy = (CUTS.y[iy+1] + CUTS.y[iy]) / 2;
+          const cz = (CUTS.z[iz+1] + CUTS.z[iz]) / 2;
+
+          const { group } = buildCubie(sx, sy, sz, ix, iy, iz);
+          group.position.set(cx, cy, cz);
+          cubeRoot.add(group);
+          cubies.push({
+            mesh: group, ix, iy, iz,
+            homePos: group.position.clone(),
+            homeQuat: group.quaternion.clone(),
+            homeIx: ix, homeIy: iy, homeIz: iz,
+          });
+        }
+
+    // recenter so the bounding-box center is at origin
+    {
+      const box = new THREE.Box3().setFromObject(cubeRoot);
+      const c = box.getCenter(new THREE.Vector3());
+      for (const cu of cubies) {
+        cu.mesh.position.sub(c);
+        cu.homePos.sub(c);
+      }
+    }
+
+    // scale slightly down so explosion has room
+    cubeRoot.scale.setScalar(1.05);
+
+    // ---------- face rotation ----------
+    const easeInOut = t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;
+
+    function rotateLayer(axis, layer, dir, duration = 360) {
+      return new Promise(resolve => {
+        const pivot = new THREE.Group();
+        cubeRoot.add(pivot);
+        const key = axis === 'x' ? 'ix' : axis === 'y' ? 'iy' : 'iz';
+        const affected = cubies.filter(c => c[key] === layer);
+        for (const c of affected) pivot.attach(c.mesh);
+
+        const target = dir * Math.PI / 2;
+        const t0 = performance.now();
+        function step() {
+          const t = Math.min(1, (performance.now() - t0) / duration);
+          pivot.rotation[axis] = target * easeInOut(t);
+          if (t < 1) requestAnimationFrame(step);
+          else {
+            pivot.rotation[axis] = target;
+            for (const c of affected) cubeRoot.attach(c.mesh);
+            cubeRoot.remove(pivot);
+            // update logical indices (90° rotation, integer cos/sin)
+            for (const c of affected) {
+              const p = [c.ix - 1, c.iy - 1, c.iz - 1];
+              const cs = 0, sn = dir;
+              let np;
+              if (axis === 'x')      np = [p[0],            cs*p[1] - sn*p[2], sn*p[1] + cs*p[2]];
+              else if (axis === 'y') np = [cs*p[0] + sn*p[2], p[1],            -sn*p[0] + cs*p[2]];
+              else                   np = [cs*p[0] - sn*p[1], sn*p[0] + cs*p[1], p[2]];
+              c.ix = np[0] + 1; c.iy = np[1] + 1; c.iz = np[2] + 1;
+            }
+            resolve();
+          }
+        }
+        step();
+      });
+    }
+
+    // ---------- explode / implode ----------
+    function tween(duration, onUpdate, easing = easeInOut) {
+      return new Promise(resolve => {
+        const t0 = performance.now();
+        function step() {
+          const t = Math.min(1, (performance.now() - t0) / duration);
+          onUpdate(easing(t), t);
+          if (t < 1) requestAnimationFrame(step);
+          else resolve();
+        }
+        step();
+      });
+    }
+
+    async function explodeOut(duration = 900) {
+      const snap = cubies.map(c => ({
+        c,
+        pos: c.mesh.position.clone(),
+        quat: c.mesh.quaternion.clone(),
+      }));
+      const targets = snap.map(({ c, pos, quat }) => {
+        const out = pos.clone().normalize();
+        if (out.lengthSq() < 0.01) out.set(0, 1, 0);
+        const dist = 1.6 + Math.random() * 1.6;
+        const jitter = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.9,
+          (Math.random() - 0.5) * 0.9,
+          (Math.random() - 0.5) * 0.9
+        );
+        const toPos = pos.clone().add(out.multiplyScalar(dist)).add(jitter);
+        const spin = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3
+        ));
+        const toQuat = spin.clone().multiply(quat);
+        return { c, fromPos: pos, fromQuat: quat, toPos, toQuat };
+      });
+      await tween(duration, t => {
+        for (const tg of targets) {
+          tg.c.mesh.position.lerpVectors(tg.fromPos, tg.toPos, t);
+          tg.c.mesh.quaternion.slerpQuaternions(tg.fromQuat, tg.toQuat, t);
+        }
+      }, t => 1 - Math.pow(1 - t, 3)); // easeOutCubic
+      return snap;
+    }
+
+    async function implodeBack(snap, duration = 800) {
+      const targets = snap.map(({ c, pos, quat }) => ({
+        c,
+        fromPos: c.mesh.position.clone(),
+        fromQuat: c.mesh.quaternion.clone(),
+        toPos: pos,
+        toQuat: quat,
+      }));
+      await tween(duration, t => {
+        for (const tg of targets) {
+          tg.c.mesh.position.lerpVectors(tg.fromPos, tg.toPos, t);
+          tg.c.mesh.quaternion.slerpQuaternions(tg.fromQuat, tg.toQuat, t);
+        }
+      }, t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2);
+    }
+
+    // ---------- scramble / solve ----------
+    let moveLog = [];
+    function randomMove(last) {
+      const axes = ['x', 'y', 'z'];
+      let m;
+      do {
+        m = {
+          axis: axes[Math.floor(Math.random() * 3)],
+          layer: Math.floor(Math.random() * 3),
+          dir: Math.random() < 0.5 ? 1 : -1,
+        };
+      } while (last && last.axis === m.axis && last.layer === m.layer);
+      return m;
+    }
+
+    async function scramble(n = 8, dur = 180) {
+      let last = null;
+      for (let i = 0; i < n; i++) {
+        const m = randomMove(last);
+        await rotateLayer(m.axis, m.layer, m.dir, dur);
+        moveLog.push(m);
+        last = m;
+      }
+    }
+
+    async function solveAll(dur = 280) {
+      for (let i = moveLog.length - 1; i >= 0; i--) {
+        const m = moveLog[i];
+        await rotateLayer(m.axis, m.layer, -m.dir, dur);
+      }
+      moveLog = [];
+    }
+
+    // ---------- drag controls ----------
+    let yaw = -0.55, pitch = 0.32;
+    let targetYaw = yaw, targetPitch = pitch;
+    let dragging = false, lastX = 0, lastY = 0;
+    let autoSpin = true;
+    let userInteracted = false;
+
+    canvas.addEventListener('pointerdown', e => {
+      dragging = true; userInteracted = true; autoSpin = false;
+      lastX = e.clientX; lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointerup', e => {
+      dragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch {}
+    });
+    canvas.addEventListener('pointercancel', () => { dragging = false; });
+    canvas.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      targetYaw   += (e.clientX - lastX) * 0.008;
+      targetPitch += (e.clientY - lastY) * 0.008;
+      targetPitch = Math.max(-1.2, Math.min(1.2, targetPitch));
+      lastX = e.clientX; lastY = e.clientY;
+    });
+
+    // ---------- UI ----------
+    const stateEl   = document.getElementById('state-readout');
+    const driftEl   = document.getElementById('drift');
+    const tagEl     = document.getElementById('selected-tag');
+    const catButtons = [...document.querySelectorAll('#cats button')];
+
+    function setState(verb, value) {
+      stateEl.innerHTML = `<span class="verb">${verb}</span>${value}`;
+    }
+    function setTag(name, action) {
+      tagEl.innerHTML = `<span class="bar"></span><span>${action === 'solve' ? 'solving' : 'shattering'} · </span><b>${name}</b>`;
+    }
+
+    let busy = false;
+    async function handleClick(btn) {
+      if (busy) return;
+      busy = true;
+      catButtons.forEach(b => { b.classList.remove('active'); b.disabled = true; });
+      const shuffleBtnRef = document.getElementById('shuffle-btn');
+      if (shuffleBtnRef) shuffleBtnRef.disabled = true;
+      btn.classList.add('active');
+
+      const name   = btn.dataset.name;
+      const action = btn.dataset.action;
+      setTag(name, action);
+
+      if (action === 'solve') {
+        setState('state', 'solving ' + name.toLowerCase() + '…');
+        driftEl.textContent = '— solving —';
+        driftEl.classList.add('show');
+        if (moveLog.length === 0) {
+          // nothing to solve — do a tiny scramble first so the animation has substance
+          await scramble(5, 140);
+          updateShuffleCount();
+          await sleep(180);
+        }
+        await solveAll(260);
+        updateShuffleCount();
+        setState('state', 'resolved · ' + name);
+        driftEl.classList.remove('show');
+        await sleep(400);
+      } else {
+        setState('state', 'shattering ' + name.toLowerCase() + '…');
+        driftEl.textContent = '— shattering —';
+        driftEl.classList.add('show');
+        // reveal pulsing veins
+        veinsGroup.visible = true;
+        veinsActive = true;
+        pulseStartTime = performance.now();
+        fadeVeins(1, 700);
+        const snap = await explodeOut(950);
+        await sleep(900);
+        // fade veins out as cube reassembles
+        fadeVeins(0, 700);
+        driftEl.textContent = '— reassembling —';
+        await implodeBack(snap, 820);
+        veinsActive = false;
+        veinsGroup.visible = false;
+        veinMat.emissiveIntensity = 0;
+        setState('state', 'reassembled · ' + name);
+        driftEl.classList.remove('show');
+        await sleep(400);
+      }
+
+      catButtons.forEach(b => b.disabled = false);
+      const shuffleBtnRef2 = document.getElementById('shuffle-btn');
+      if (shuffleBtnRef2) shuffleBtnRef2.disabled = false;
+      busy = false;
+    }
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    catButtons.forEach(b => b.addEventListener('click', () => handleClick(b)));
+
+    // shuffle button
+    const shuffleBtn   = document.getElementById('shuffle-btn');
+    const shuffleCount = document.getElementById('shuffle-count');
+    function updateShuffleCount() {
+      shuffleCount.textContent = '×' + moveLog.length;
+    }
+    async function handleShuffle() {
+      if (busy) return;
+      busy = true;
+      catButtons.forEach(b => b.disabled = true);
+      shuffleBtn.disabled = true;
+      driftEl.textContent = '— shuffling —';
+      driftEl.classList.add('show');
+      setState('state', 'shuffling…');
+      // user-driven shuffle is more punchy — 8 fast moves
+      await scramble(8, 130);
+      updateShuffleCount();
+      setState('state', 'scrambled · pick a category to solve');
+      driftEl.classList.remove('show');
+      catButtons.forEach(b => b.disabled = false);
+      shuffleBtn.disabled = false;
+      busy = false;
+    }
+    shuffleBtn.addEventListener('click', handleShuffle);
+
+    // clock
+    function updateClock() {
+      const d = new Date();
+      // JST offset display (regardless of viewer's tz) — just format their local time visually
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      document.getElementById('clock').textContent = `${hh}:${mm}`;
+    }
+    updateClock();
+    setInterval(updateClock, 30_000);
+
+    // ---------- render loop ----------
+    function animate() {
+      requestAnimationFrame(animate);
+      yaw   += (targetYaw   - yaw)   * 0.10;
+      pitch += (targetPitch - pitch) * 0.10;
+      if (!dragging && autoSpin) targetYaw += 0.0014;
+      viewGroup.rotation.y = yaw;
+      viewGroup.rotation.x = pitch;
+
+      // heartbeat pulse for the veins — smooth, continuous, no dark gaps
+      if (veinsActive || veinMat.opacity > 0.01) {
+        const t = (performance.now() - pulseStartTime) / 1000;
+        const beat = heartbeatAt(t);
+        veinMat.emissiveIntensity = beat * 2.2 * veinMat.opacity;
+        veinsGroup.scale.setScalar(1 + (beat - 0.775) * 0.06);
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    // ---------- intro: scramble on load ----------
+    (async () => {
+      setState('state', 'booting…');
+      await sleep(300);
+      setState('state', 'scrambling…');
+      await scramble(7, 200);
+      updateShuffleCount();
+      setState('state', 'scrambled · pick a category to solve');
+    })();
+  </script>
+</body>
+</html>
