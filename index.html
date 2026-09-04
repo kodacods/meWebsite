@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -358,7 +358,7 @@
     camera.position.set(0, 0.4, 14);
     camera.lookAt(0, 0, 0);
 
-    // env map for glassy reflections — procedural nature scene
+    // env map for glassy reflections â€” procedural nature scene
     const pmrem = new THREE.PMREMGenerator(renderer);
 
     function createNatureEnvScene() {
@@ -445,7 +445,7 @@
         s.add(cone);
       }
 
-      // mid mountain range — larger, slightly warmer
+      // mid mountain range â€” larger, slightly warmer
       for (let i = 0; i < 12; i++) {
         const angle = (i / 12) * Math.PI * 2 + 0.4;
         const r = 38 + rng() * 6;
@@ -461,7 +461,7 @@
         s.add(cone);
       }
 
-      // near hills — lower rolling shapes
+      // near hills â€” lower rolling shapes
       for (let i = 0; i < 9; i++) {
         const angle = (i / 9) * Math.PI * 2 + 0.2;
         const r = 26 + rng() * 4;
@@ -475,7 +475,7 @@
         s.add(dome);
       }
 
-      // closer ring of conifers — darker, varied heights, some warm-tinted (autumn)
+      // closer ring of conifers â€” darker, varied heights, some warm-tinted (autumn)
       for (let i = 0; i < 64; i++) {
         const angle = (i / 64) * Math.PI * 2 + rng() * 0.18;
         const r = 14 + rng() * 10;
@@ -503,7 +503,7 @@
         }
       }
 
-      // foreground low bushes / rocks — closest detail band
+      // foreground low bushes / rocks â€” closest detail band
       for (let i = 0; i < 36; i++) {
         const angle = rng() * Math.PI * 2;
         const r = 8 + rng() * 4.5;
@@ -563,7 +563,7 @@
         s.add(cloud);
       }
 
-      // a still lake — reflective teal patch beyond the trees
+      // a still lake â€” reflective teal patch beyond the trees
       const water = new THREE.Mesh(
         new THREE.CircleGeometry(16, 48),
         new THREE.MeshBasicMaterial({ color: 0x6b94a4, transparent: true, opacity: 0.75 })
@@ -600,7 +600,7 @@
     const natureScene = createNatureEnvScene();
     scene.environment = pmrem.fromScene(natureScene, 0).texture;
 
-    // lights — add directionals for crisp specular streaks
+    // lights â€” add directionals for crisp specular streaks
     scene.add(new THREE.AmbientLight(0xffffff, 0.18));
     const key = new THREE.DirectionalLight(0xffffff, 1.4);
     key.position.set(5, 7, 6);
@@ -717,7 +717,7 @@
       if (lowerMesh) { const h = jawHome(lowerMesh); lowerMesh.position.copy(h.pos); lowerMesh.rotation.copy(h.rot); }
     }
 
-    // 1) rapid chomping — jaws snap open and shut like chattering teeth
+    // 1) rapid chomping â€” jaws snap open and shut like chattering teeth
     async function playChomp(duration = 900) {
       if (!upperMesh || !lowerMesh) return playSolve(duration);
       const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
@@ -732,7 +732,7 @@
       resetJaws();
     }
 
-    // 2) chattering — fast tiny jitter, like cold/nervous teeth clacking together
+    // 2) chattering â€” fast tiny jitter, like cold/nervous teeth clacking together
     async function playChatter(duration = 900) {
       if (!upperMesh || !lowerMesh) return playSolve(duration);
       const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
@@ -746,7 +746,7 @@
       resetJaws();
     }
 
-    // 3) argument — jaws hinge open wide as if "talking" to each other, then snap shut
+    // 3) argument â€” jaws hinge open wide as if "talking" to each other, then snap shut
     async function playArgue(duration = 900) {
       if (!upperMesh || !lowerMesh) return playSolve(duration);
       const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
@@ -767,7 +767,7 @@
       resetJaws();
     }
 
-    // 4) wiggle dance — both jaws bounce and sway playfully, slightly out of sync
+    // 4) wiggle dance â€” both jaws bounce and sway playfully, slightly out of sync
     async function playWiggle(duration = 900) {
       if (!upperMesh || !lowerMesh) return playSolve(duration);
       const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
@@ -782,7 +782,7 @@
       resetJaws();
     }
 
-    // 5) somersault — jaws tumble in opposite full loops, then land back home
+    // 5) somersault â€” jaws tumble in opposite full loops, then land back home
     async function playTumble(duration = 900) {
       if (!upperMesh || !lowerMesh) return playSolve(duration);
       const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
