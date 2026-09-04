@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stella Yan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #06070a;
+      --ink-0: #ececf1;
+      --ink-1: #9ea0ad;
+      --ink-2: #595c69;
+      --ink-3: #34363f;
+      --accent: #b7e3ff;
+      --hot: #ff7383;
+      --line: rgba(255,255,255,0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; min-height: 100%;
+      background: var(--bg-0);
+      color: var(--ink-0);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+    }
+    body {
+      background:
+        radial-gradient(70% 55% at 50% 42%, #161824 0%, #0a0b10 55%, #04050a 100%);
+    }
+    body::after {
+      /* subtle vignette */
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(110% 80% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+      z-index: 2;
+    }
+
+    #stage {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100vh;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+      z-index: 1;
+    }
+    #stage:active { cursor: grabbing; }
+
+    /* ---------- chrome UI ---------- */
+    .ui {
+      position: relative;
+      min-height: 100vh;
+      pointer-events: none;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: clamp(600px, 42vw, 1100px) 1fr clamp(520px, 36vw, 950px);
+      padding: clamp(40px, 4.5vw, 90px) clamp(48px, 5.5vw, 110px);
+      gap: clamp(32px, 3.6vw, 70px);
+      z-index: 3;
+    }
+    .ui > * { pointer-events: auto; }
+
+    .top {
+      grid-row: 1; grid-column: 1 / -1;
+      display: flex; justify-content: flex-end; align-items: center;
+    }
+    .left  { grid-row: 2; grid-column: 1; align-self: end; }
+    .right { grid-row: 2; grid-column: 3; align-self: end; text-align: right; }
+    .bottom {
+      grid-row: 3; grid-column: 1 / -1;
+      display: flex; justify-content: space-between; align-items: end;
+    }
+
+    .mark {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      font-size: clamp(18px, 2.2vw, 40px); letter-spacing: 0.02em;
+      color: var(--ink-1);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .mark strong { color: var(--ink-0); font-weight: 500; letter-spacing: 0.02em; }
+    .mark .sep { color: var(--ink-3); }
+
+    .lead {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(13px, 1.8vw, 30px); letter-spacing: 0.28em;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      margin: 0 0 18px 0;
+    }
+    h1.title {
+      font-family: 'Instrument Serif', 'Times New Roman', serif;
+      font-size: clamp(56px, 13vw, 260px);
+      line-height: 0.96; font-weight: 400;
+      margin: 0 0 18px 0;
+      letter-spacing: -0.02em;
+    }
+    h1.title em { font-style: italic; color: var(--accent); }
+    .blurb {
+      color: var(--ink-1);
+      max-width: 42vw;
+      font-size: clamp(18px, 2.6vw, 44px); line-height: 1.6;
+    }
+
+    /* category list */
+    nav.cats {
+      display: flex; flex-direction: column;
+      gap: 2px;
+      align-items: flex-end;
+    }
+    nav.cats button {
+      pointer-events: auto;
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: var(--ink-1);
+      font: inherit;
+      padding: clamp(8px, 1.6vw, 32px) 0;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      align-items: baseline;
+      gap: 20px;
+      transition: color 0.25s ease;
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(88px, 16vw, 296px);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    nav.cats button > .idx {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(13px, 1.8vw, 30px);
+      color: var(--ink-3);
+      letter-spacing: 0.1em;
+      text-align: right;
+    }
+    nav.cats button > .name { text-align: left; }
+    nav.cats button:hover, nav.cats button:focus-visible { color: var(--ink-0); outline: none; }
+    nav.cats button:hover .idx, nav.cats button.active .idx { color: var(--ink-1); }
+    nav.cats button.active { color: var(--ink-0); }
+    nav.cats button:disabled { cursor: progress; opacity: 0.55; }
+
+    /* action buttons */
+    .controls { display: flex; gap: 10px; align-items: center; }
+    .controls button {
+      appearance: none;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--line);
+      color: var(--ink-0);
+      padding: clamp(16px, 2.2vw, 40px) clamp(28px, 4vw, 68px) clamp(16px, 2.2vw, 40px) clamp(22px, 3.2vw, 56px);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(13px, 1.9vw, 32px);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.25s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .controls button:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .controls button:active { transform: translateY(1px); }
+    .controls button:disabled { opacity: 0.4; cursor: progress; }
+
+    /* floating next-section nav arrow */
+    .next-section-btn {
+      position: fixed;
+      right: clamp(24px, 3vw, 56px);
+      bottom: clamp(24px, 3vw, 56px);
+      width: clamp(52px, 5.5vw, 110px);
+      height: clamp(52px, 5.5vw, 110px);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line);
+      color: var(--ink-0);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.25s ease, opacity 0.25s ease;
+    }
+    .next-section-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.24);
+    }
+    .next-section-btn:active { transform: translateY(2px); }
+    .next-section-btn svg { width: 45%; height: 45%; }
+    .next-section-btn.spin svg { animation: bob 1.4s ease-in-out infinite; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* content sections you scroll down to */
+    .sections {
+      position: relative;
+      z-index: 3;
+      background: linear-gradient(180deg, transparent 0%, var(--bg-0) 6%, var(--bg-0) 100%);
+    }
+    .section {
+      min-height: 100vh;
+      padding: clamp(120px, 14vw, 220px) clamp(48px, 6vw, 120px) clamp(60px, 8vw, 140px);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      border-top: 1px solid var(--line);
+    }
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(13px, 1.6vw, 22px); letter-spacing: 0.28em;
+      color: var(--ink-2); text-transform: uppercase; margin: 0 0 20px 0;
+    }
+    .section h2 {
+      font-family: 'Instrument Serif', serif;
+      font-weight: 400; font-size: clamp(96px, 14vw, 240px);
+      color: var(--ink-0); margin: 0 0 24px 0; line-height: 1;
+    }
+    .section-intro {
+      color: var(--ink-1); max-width: 900px;
+      font-size: clamp(18px, 2.4vw, 42px); line-height: 1.6;
+      margin: 0 0 48px 0;
+    }
+    .section-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      max-width: 2800px;
+    }
+    .section-item {
+      background: var(--bg-0);
+      padding: clamp(28px, 4.8vw, 88px) clamp(26px, 4.4vw, 80px);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .section-item .name {
+      font-size: clamp(20px, 4vw, 60px); color: var(--ink-0);
+    }
+    .section-item .meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(14px, 2.2vw, 36px); color: var(--ink-2); letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 980px) {
+      .ui { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; padding: 20px; }
+      .top { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .left { grid-row: 2; align-self: start; }
+      .right { grid-row: 4; align-self: end; text-align: right; }
+      h1.title { font-size: 36px; }
+      .blurb { display: none; }
+      nav.cats button { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+
+  <div class="ui">
+    <div class="top">
+      <div class="mark">
+        <strong>Stella&nbsp;Yan</strong>
+        <span class="sep">/</span>
+      </div>
+    </div>
+    <div class="left">
+      <h1 class="title">Welcome <br > Haere mai</h1>
+      <p class="blurb">A quick look at what I've built, made, and worked on. If you're on a larger screen you'll get a more immersive experience to this introduction.</p>
+    </div>
+
+    <div class="right">
+      <nav class="cats" id="cats">
+        <button data-name="Projects"><span class="idx">01</span><span class="name">Projects</span></button>
+        <button data-name="Skills"><span class="idx">02</span><span class="name">Skills</span></button>
+        <button data-name="Contact"><span class="idx">03</span><span class="name">Contact</span></button>
+      </nav>
+    </div>
+
+    <div class="bottom">
+      <div class="controls">
+        <button id="shuffle-btn" type="button" title="Shuffle the teeth">
+          <span>Feeling lucky?</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <button class="next-section-btn spin" id="next-section-btn" type="button" title="Next section" aria-label="Scroll to next section">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14"/>
+      <path d="M5 12l7 7 7-7"/>
+    </svg>
+  </button>
+
+  <div class="sections" id="sections">
+    <section class="section" id="section-projects">
+      <p class="section-eyebrow">01</p>
+      <h2>Projects</h2>
+      <p class="section-intro">A few things I've built recently.</p>
+      <div class="section-items" id="items-projects"></div>
+    </section>
+    <section class="section" id="section-skills">
+      <p class="section-eyebrow">02</p>
+      <h2>Skills</h2>
+      <p class="section-intro">Tools and techniques I reach for most.</p>
+      <div class="section-items" id="items-skills">
+        <div class="section-item">
+          <div class="name">JavaScript</div>
+          <div class="meta">Programming Language</div>
+        </div>
+        <div class="section-item">
+          <div class="name">React</div>
+          <div class="meta">UI Library</div>
+        </div>
+        <div class="section-item">
+          <div class="name">Node.js</div>
+          <div class="meta">Backend Framework</div>
+        </div>
+      </div>
+    </section>
+    <section class="section" id="section-contact">
+      <p class="section-eyebrow">03</p>
+      <h2>Contact</h2>
+      <p class="section-intro">Best ways to reach me.</p>
+      <div class="section-items" id="items-contact"></div>
+    </section>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+    // ---------- renderer / scene ----------
+    const canvas = document.getElementById('stage');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(28, innerWidth/innerHeight, 0.1, 100);
+    camera.position.set(0, 0.4, 14);
+    camera.lookAt(0, 0, 0);
+
+    // env map for glassy reflections — procedural nature scene
+    const pmrem = new THREE.PMREMGenerator(renderer);
+
+    function createNatureEnvScene() {
+      const s = new THREE.Scene();
+
+      // sky dome with gradient
+      const skyGeo = new THREE.SphereGeometry(60, 64, 32);
+      const skyMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        uniforms: {
+          topColor:     { value: new THREE.Color(0x3a5d86) },
+          midColor:     { value: new THREE.Color(0x9bbedf) },
+          horizonColor: { value: new THREE.Color(0xe8b78a) },
+          groundColor:  { value: new THREE.Color(0x1c2620) },
+        },
+        vertexShader: `
+          varying vec3 vPos;
+          void main() {
+            vPos = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 topColor;
+          uniform vec3 midColor;
+          uniform vec3 horizonColor;
+          uniform vec3 groundColor;
+          varying vec3 vPos;
+          void main() {
+            float h = normalize(vPos).y;
+            vec3 col;
+            if (h > 0.0) {
+              float t1 = smoothstep(0.0, 0.18, h);
+              float t2 = smoothstep(0.15, 0.55, h);
+              col = mix(horizonColor, midColor, t1);
+              col = mix(col, topColor, t2);
+            } else {
+              col = mix(horizonColor, groundColor, smoothstep(0.0, -0.25, h));
+            }
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+      });
+      s.add(new THREE.Mesh(skyGeo, skyMat));
+
+      // deterministic-ish random so reflections look the same each load
+      let seed = 1;
+      const rng = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+      // sun + layered halo for soft glow
+      const sunPos = new THREE.Vector3(22, 9, -24);
+      const sun = new THREE.Mesh(
+        new THREE.SphereGeometry(2.6, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xfff1cf })
+      );
+      sun.position.copy(sunPos);
+      s.add(sun);
+      const halo1 = new THREE.Mesh(
+        new THREE.SphereGeometry(5.5, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffd9a6, transparent: true, opacity: 0.38 })
+      );
+      halo1.position.copy(sunPos);
+      s.add(halo1);
+      const halo2 = new THREE.Mesh(
+        new THREE.SphereGeometry(10, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0xf3c898, transparent: true, opacity: 0.14 })
+      );
+      halo2.position.copy(sunPos);
+      s.add(halo2);
+
+      // far mountain range (faint, bluish, large)
+      for (let i = 0; i < 14; i++) {
+        const angle = (i / 14) * Math.PI * 2 + 0.6;
+        const r = 52 + rng() * 8;
+        const h = 14 + rng() * 9;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(11 + rng() * 5, h, 4),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.6, 0.18 + rng() * 0.06, 0.32 + rng() * 0.06),
+          })
+        );
+        cone.position.set(Math.cos(angle) * r, h / 2 - 5, Math.sin(angle) * r);
+        cone.rotation.y = rng() * Math.PI;
+        s.add(cone);
+      }
+
+      // mid mountain range — larger, slightly warmer
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2 + 0.4;
+        const r = 38 + rng() * 6;
+        const h = 11 + rng() * 7;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(9 + rng() * 3, h, 4),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.58, 0.16 + rng() * 0.07, 0.24 + rng() * 0.07),
+          })
+        );
+        cone.position.set(Math.cos(angle) * r, h / 2 - 5, Math.sin(angle) * r);
+        cone.rotation.y = rng() * Math.PI;
+        s.add(cone);
+      }
+
+      // near hills — lower rolling shapes
+      for (let i = 0; i < 9; i++) {
+        const angle = (i / 9) * Math.PI * 2 + 0.2;
+        const r = 26 + rng() * 4;
+        const dome = new THREE.Mesh(
+          new THREE.SphereGeometry(6 + rng() * 3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color().setHSL(0.32, 0.18 + rng() * 0.08, 0.18 + rng() * 0.08),
+          })
+        );
+        dome.position.set(Math.cos(angle) * r, -3.5, Math.sin(angle) * r);
+        s.add(dome);
+      }
+
+      // closer ring of conifers — darker, varied heights, some warm-tinted (autumn)
+      for (let i = 0; i < 64; i++) {
+        const angle = (i / 64) * Math.PI * 2 + rng() * 0.18;
+        const r = 14 + rng() * 10;
+        const h = 4 + rng() * 6;
+        const isAutumn = rng() < 0.12;
+        const tree = new THREE.Mesh(
+          new THREE.ConeGeometry(1.1 + rng() * 0.9, h, 6),
+          new THREE.MeshBasicMaterial({
+            color: isAutumn
+              ? new THREE.Color().setHSL(0.06 + rng() * 0.05, 0.45 + rng() * 0.2, 0.28 + rng() * 0.1)
+              : new THREE.Color().setHSL(0.27 + rng() * 0.06, 0.25 + rng() * 0.15, 0.14 + rng() * 0.10),
+          })
+        );
+        tree.position.set(Math.cos(angle) * r, h / 2 - 3, Math.sin(angle) * r);
+        s.add(tree);
+
+        // tree trunk (thin cylinder) for a tiny bit of structure
+        if (rng() < 0.4) {
+          const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.12, 0.16, 1.2, 8),
+            new THREE.MeshBasicMaterial({ color: 0x2a1e15 })
+          );
+          trunk.position.set(tree.position.x, tree.position.y - h/2 - 0.5, tree.position.z);
+          s.add(trunk);
+        }
+      }
+
+      // foreground low bushes / rocks — closest detail band
+      for (let i = 0; i < 36; i++) {
+        const angle = rng() * Math.PI * 2;
+        const r = 8 + rng() * 4.5;
+        const isRock = rng() < 0.35;
+        const obj = new THREE.Mesh(
+          isRock
+            ? new THREE.DodecahedronGeometry(0.6 + rng() * 0.5, 0)
+            : new THREE.SphereGeometry(0.9 + rng() * 0.6, 10, 6),
+          new THREE.MeshBasicMaterial({
+            color: isRock
+              ? new THREE.Color().setHSL(0.07, 0.05, 0.22 + rng() * 0.1)
+              : new THREE.Color().setHSL(0.3, 0.25 + rng() * 0.15, 0.18 + rng() * 0.1),
+          })
+        );
+        obj.position.set(Math.cos(angle) * r, -2.5 + rng() * 0.4, Math.sin(angle) * r);
+        obj.scale.set(1, 0.55 + rng() * 0.4, 1);
+        s.add(obj);
+      }
+
+      // grass / forest floor with subtle warm patches
+      const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(60, 64),
+        new THREE.MeshBasicMaterial({ color: 0x2b3528 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -3.2;
+      s.add(ground);
+
+      // warm sandy clearing nearer the sun
+      const clearing = new THREE.Mesh(
+        new THREE.CircleGeometry(8, 32),
+        new THREE.MeshBasicMaterial({ color: 0x8a6c4a, transparent: true, opacity: 0.65 })
+      );
+      clearing.rotation.x = -Math.PI / 2;
+      clearing.position.set(10, -3.18, -12);
+      s.add(clearing);
+
+      // clouds: more layered, brighter near the sun, cooler away
+      for (let i = 0; i < 16; i++) {
+        const angle = rng() * Math.PI * 2;
+        const distToSun = Math.abs(angle - Math.atan2(sunPos.z, sunPos.x));
+        const warm = distToSun < 1.2;
+        const cloud = new THREE.Mesh(
+          new THREE.SphereGeometry(2.5 + rng() * 2.5, 14, 10),
+          new THREE.MeshBasicMaterial({
+            color: warm ? 0xfde4c0 : 0xd0d6dc,
+            transparent: true,
+            opacity: 0.6 + rng() * 0.25,
+          })
+        );
+        cloud.position.set(
+          Math.cos(angle) * (26 + rng() * 14),
+          10 + rng() * 11,
+          Math.sin(angle) * (26 + rng() * 14)
+        );
+        cloud.scale.set(2.6 + rng() * 1.4, 0.45 + rng() * 0.2, 1.5 + rng());
+        s.add(cloud);
+      }
+
+      // a still lake — reflective teal patch beyond the trees
+      const water = new THREE.Mesh(
+        new THREE.CircleGeometry(16, 48),
+        new THREE.MeshBasicMaterial({ color: 0x6b94a4, transparent: true, opacity: 0.75 })
+      );
+      water.rotation.x = -Math.PI / 2;
+      water.position.set(-14, -3.1, 8);
+      s.add(water);
+
+      // a brighter highlight strip on the water nearest the sun direction
+      const waterShine = new THREE.Mesh(
+        new THREE.PlaneGeometry(14, 2.2),
+        new THREE.MeshBasicMaterial({ color: 0xf6e5c4, transparent: true, opacity: 0.45 })
+      );
+      waterShine.rotation.x = -Math.PI / 2;
+      waterShine.position.set(-14, -3.05, 8);
+      s.add(waterShine);
+
+      // a few tiny bird specks high in the sky
+      for (let i = 0; i < 8; i++) {
+        const a = rng() * Math.PI * 2;
+        const r = 30 + rng() * 10;
+        const bird = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.4, 0.12),
+          new THREE.MeshBasicMaterial({ color: 0x2b2f36, side: THREE.DoubleSide })
+        );
+        bird.position.set(Math.cos(a) * r, 14 + rng() * 6, Math.sin(a) * r);
+        bird.rotation.y = rng() * Math.PI;
+        s.add(bird);
+      }
+
+      return s;
+    }
+
+    const natureScene = createNatureEnvScene();
+    scene.environment = pmrem.fromScene(natureScene, 0).texture;
+
+    // lights — add directionals for crisp specular streaks
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(5, 7, 6);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x88b6ff, 0.9);
+    rim.position.set(-6, -1, -4);
+    scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xffc89c, 0.35);
+    fill.position.set(2, -4, 3);
+    scene.add(fill);
+
+    // ---------- model ----------
+    const viewGroup = new THREE.Group(); // user drag rotation
+    scene.add(viewGroup);
+
+    const modelRoot = new THREE.Group();
+    viewGroup.add(modelRoot);
+
+    const stlMat = new THREE.MeshPhysicalMaterial({
+      color: 0xe8e4dc,
+      metalness: 0.1,
+      roughness: 0.35,
+      envMapIntensity: 1.2,
+      clearcoat: 0.3,
+      clearcoatRoughness: 0.25,
+    });
+
+    let upperMesh = null;
+    let lowerMesh = null;
+    const stlLoader = new STLLoader();
+
+    function layoutJawMeshes() {
+      if (!upperMesh || !lowerMesh) return;
+      const gap = 0.15;
+      const upperHeight = upperMesh.geometry.boundingBox.max.y - upperMesh.geometry.boundingBox.min.y;
+      const lowerHeight = lowerMesh.geometry.boundingBox.max.y - lowerMesh.geometry.boundingBox.min.y;
+      const totalHeight = (upperHeight * upperMesh.scale.y) + gap + (lowerHeight * lowerMesh.scale.y);
+      const startY = totalHeight / 2;
+
+      upperMesh.position.x = 0;
+      lowerMesh.position.x = 0;
+      upperMesh.position.y = startY - (upperHeight * upperMesh.scale.y) / 2;
+      lowerMesh.position.y = startY - (upperHeight * upperMesh.scale.y) - gap - (lowerHeight * lowerMesh.scale.y) / 2;
+    }
+
+    stlLoader.load('UpperJawScan.stl', (geometry) => {
+      geometry.computeVertexNormals();
+      geometry.center();
+
+      // auto-scale to roughly a 4-unit footprint
+      geometry.computeBoundingBox();
+      const size = new THREE.Vector3();
+      geometry.boundingBox.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 4 / maxDim;
+
+      upperMesh = new THREE.Mesh(geometry, stlMat);
+      upperMesh.scale.setScalar(scale);
+      modelRoot.add(upperMesh);
+      layoutJawMeshes();
+    }, undefined, (err) => {
+      console.error('Failed to load STL:', err);
+    });
+
+    stlLoader.load('LowerJawScan.stl', (geometry) => {
+      geometry.computeVertexNormals();
+      geometry.center();
+
+      geometry.computeBoundingBox();
+      const size = new THREE.Vector3();
+      geometry.boundingBox.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 4 / maxDim;
+
+      lowerMesh = new THREE.Mesh(geometry, stlMat);
+      lowerMesh.scale.setScalar(scale);
+      modelRoot.add(lowerMesh);
+      layoutJawMeshes();
+    }, undefined, (err) => {
+      console.error('Failed to load STL:', err);
+    });
+
+    // ---------- tween helper ----------
+    const easeInOut = t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;
+    function tween(duration, onUpdate, easing = easeInOut) {
+      return new Promise(resolve => {
+        const t0 = performance.now();
+        function step() {
+          const t = Math.min(1, (performance.now() - t0) / duration);
+          onUpdate(easing(t), t);
+          if (t < 1) requestAnimationFrame(step);
+          else resolve();
+        }
+        step();
+      });
+    }
+
+    // simple "solve" flourish: a smooth full spin
+    async function playSolve(duration = 900) {
+      await tween(duration, t => {
+        modelRoot.rotation.y = t * Math.PI * 2;
+      }, t => 1 - Math.pow(1 - t, 3));
+      modelRoot.rotation.y = 0;
+    }
+
+    // ---------- silly teeth animations (for shuffle) ----------
+    // each jaw mesh keeps its own "home" position/rotation so we can always reset cleanly
+    function jawHome(mesh) {
+      if (!mesh._home) mesh._home = { pos: mesh.position.clone(), rot: mesh.rotation.clone() };
+      return mesh._home;
+    }
+    function resetJaws() {
+      if (upperMesh) { const h = jawHome(upperMesh); upperMesh.position.copy(h.pos); upperMesh.rotation.copy(h.rot); }
+      if (lowerMesh) { const h = jawHome(lowerMesh); lowerMesh.position.copy(h.pos); lowerMesh.rotation.copy(h.rot); }
+    }
+
+    // 1) rapid chomping — jaws snap open and shut like chattering teeth
+    async function playChomp(duration = 900) {
+      if (!upperMesh || !lowerMesh) return playSolve(duration);
+      const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
+      const bites = 6;
+      for (let i = 0; i < bites; i++) {
+        await tween(duration / bites / 2, t => {
+          const open = Math.sin(t * Math.PI) * 0.55;
+          upperMesh.position.y = hu.pos.y + open * 0.5;
+          lowerMesh.position.y = hl.pos.y - open * 0.5;
+        }, t => t);
+      }
+      resetJaws();
+    }
+
+    // 2) chattering — fast tiny jitter, like cold/nervous teeth clacking together
+    async function playChatter(duration = 900) {
+      if (!upperMesh || !lowerMesh) return playSolve(duration);
+      const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
+      await tween(duration, (t, raw) => {
+        const chatter = Math.abs(Math.sin(raw * 60)) * 0.18 * (1 - t * 0.3);
+        upperMesh.position.y = hu.pos.y + chatter;
+        lowerMesh.position.y = hl.pos.y - chatter;
+        upperMesh.rotation.x = Math.sin(raw * 55) * 0.06;
+        lowerMesh.rotation.x = -Math.sin(raw * 55) * 0.06;
+      }, t => t);
+      resetJaws();
+    }
+
+    // 3) argument — jaws hinge open wide as if "talking" to each other, then snap shut
+    async function playArgue(duration = 900) {
+      if (!upperMesh || !lowerMesh) return playSolve(duration);
+      const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
+      await tween(duration * 0.55, t => {
+        const e = t;
+        upperMesh.rotation.x = hu.rot.x - e * 0.7;
+        lowerMesh.rotation.x = hl.rot.x + e * 0.7;
+        upperMesh.position.y = hu.pos.y + e * 0.5;
+        lowerMesh.position.y = hl.pos.y - e * 0.5;
+      }, t => 1 - Math.pow(1 - t, 3));
+      await tween(duration * 0.45, t => {
+        const e = 1 - t;
+        upperMesh.rotation.x = hu.rot.x - e * 0.7;
+        lowerMesh.rotation.x = hl.rot.x + e * 0.7;
+        upperMesh.position.y = hu.pos.y + e * 0.5;
+        lowerMesh.position.y = hl.pos.y - e * 0.5;
+      }, t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2);
+      resetJaws();
+    }
+
+    // 4) wiggle dance — both jaws bounce and sway playfully, slightly out of sync
+    async function playWiggle(duration = 900) {
+      if (!upperMesh || !lowerMesh) return playSolve(duration);
+      const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
+      await tween(duration, (t, raw) => {
+        upperMesh.position.y = hu.pos.y + Math.max(0, Math.sin(raw * 12)) * 0.28 * (1 - t * 0.4);
+        lowerMesh.position.y = hl.pos.y - Math.max(0, Math.sin(raw * 12 + Math.PI * 0.4)) * 0.28 * (1 - t * 0.4);
+        upperMesh.rotation.z = Math.sin(raw * 9) * 0.14;
+        lowerMesh.rotation.z = Math.sin(raw * 9 + 1) * -0.14;
+        modelRoot.rotation.y = Math.sin(raw * 6) * 0.25;
+      }, t => t);
+      modelRoot.rotation.y = 0;
+      resetJaws();
+    }
+
+    // 5) somersault — jaws tumble in opposite full loops, then land back home
+    async function playTumble(duration = 900) {
+      if (!upperMesh || !lowerMesh) return playSolve(duration);
+      const hu = jawHome(upperMesh), hl = jawHome(lowerMesh);
+      await tween(duration, t => {
+        upperMesh.rotation.z = t * Math.PI * 2;
+        lowerMesh.rotation.z = -t * Math.PI * 2;
+        upperMesh.position.y = hu.pos.y + Math.sin(t * Math.PI) * 0.7;
+        lowerMesh.position.y = hl.pos.y - Math.sin(t * Math.PI) * 0.7;
+      }, t => 1 - Math.pow(1 - t, 3));
+      resetJaws();
+    }
+
+    const shuffleAnimations = [playChomp, playChatter, playArgue, playWiggle, playTumble];
+    function pickRandomShuffleAnim() {
+      return shuffleAnimations[Math.floor(Math.random() * shuffleAnimations.length)];
+    }
+
+    // ---------- drag controls ----------
+    let yaw = -0.55, pitch = 0.32;
+    let targetYaw = yaw, targetPitch = pitch;
+    let dragging = false, lastX = 0, lastY = 0;
+    let autoSpin = true;
+    let userInteracted = false;
+
+    canvas.addEventListener('pointerdown', e => {
+      dragging = true; userInteracted = true; autoSpin = false;
+      lastX = e.clientX; lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointerup', e => {
+      dragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch {}
+    });
+    canvas.addEventListener('pointercancel', () => { dragging = false; });
+    canvas.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      targetYaw   += (e.clientX - lastX) * 0.008;
+      targetPitch += (e.clientY - lastY) * 0.008;
+      targetPitch = Math.max(-1.2, Math.min(1.2, targetPitch));
+      lastX = e.clientX; lastY = e.clientY;
+    });
+
+    // ---------- UI ----------
+    const catButtons = [...document.querySelectorAll('#cats button')];
+
+    // ---------- example content data ----------
+    // Add/edit entries here to populate each category section.
+    const categoryData = {
+      Skills: {
+        items: [
+          { name: 'JavaScript / TypeScript', meta: 'daily driver' },
+          { name: 'Three.js / WebGL', meta: '3+ yrs' },
+          { name: 'Python', meta: 'data + scripting' },
+          { name: 'Figma', meta: 'design' },
+        ],
+      },
+      Projects: {
+        items: [
+          { name: 'Dental scan viewer', meta: '2026' },
+          { name: 'Portfolio site (this one)', meta: '2026' },
+          { name: 'Side project #3', meta: '2025' },
+        ],
+      },
+      Contact: {
+        items: [
+          { name: 'Email', meta: 'hello@stellayan.dev' },
+          { name: 'GitHub', meta: '@kodacods' },
+          { name: 'LinkedIn', meta: 'linkedin.com/in/stellayan' },
+        ],
+      },
+    };
+
+    // populate each section's item grid on load
+    Object.entries(categoryData).forEach(([name, data]) => {
+      const grid = document.getElementById('items-' + name.toLowerCase());
+      if (!grid) return;
+      grid.innerHTML = data.items.map(item =>
+        `<div class="section-item"><span class="name">${item.name}</span><span class="meta">${item.meta}</span></div>`
+      ).join('');
+    });
+
+    // ordered list of navigable "stops": hero first, then each content section
+    const sectionOrder = ['hero', 'projects', 'skills', 'contact'];
+    function sectionEl(id) {
+      return id === 'hero' ? document.querySelector('.ui') : document.getElementById('section-' + id);
+    }
+    function setHash(id) {
+      const url = location.pathname + location.search + (id === 'hero' ? '' : '#' + id);
+      history.replaceState(null, '', url);
+    }
+    let currentSectionIndex = 0;
+    function goToSection(id) {
+      const idx = sectionOrder.indexOf(id);
+      const el = sectionEl(id);
+      if (!el) return;
+      currentSectionIndex = idx === -1 ? 0 : idx;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setHash(id);
+    }
+    function scrollToSection(name) {
+      goToSection(name.toLowerCase());
+    }
+
+    let busy = false;
+    async function handleClick(btn) {
+      if (busy) return;
+      busy = true;
+      catButtons.forEach(b => { b.classList.remove('active'); b.disabled = true; });
+      const shuffleBtnRef = document.getElementById('shuffle-btn');
+      if (shuffleBtnRef) shuffleBtnRef.disabled = true;
+      btn.classList.add('active');
+
+      const name = btn.dataset.name;
+      scrollToSection(name);
+
+      catButtons.forEach(b => b.disabled = false);
+      const shuffleBtnRef2 = document.getElementById('shuffle-btn');
+      if (shuffleBtnRef2) shuffleBtnRef2.disabled = false;
+      busy = false;
+    }
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    catButtons.forEach(b => b.addEventListener('click', () => handleClick(b)));
+
+    // shuffle button
+    const shuffleBtn   = document.getElementById('shuffle-btn');
+    async function handleShuffle() {
+      if (busy) return;
+      busy = true;
+      catButtons.forEach(b => b.disabled = true);
+      shuffleBtn.disabled = true;
+      const anim = pickRandomShuffleAnim();
+      await anim(900);
+      catButtons.forEach(b => b.disabled = false);
+      shuffleBtn.disabled = false;
+      busy = false;
+    }
+    shuffleBtn.addEventListener('click', handleShuffle);
+
+    // next-section nav arrow: cycles through hero + each section top-to-bottom, in order
+    const nextSectionBtn = document.getElementById('next-section-btn');
+    // document-relative top position, unlike offsetTop this isn't thrown off by
+    // positioned ancestors (e.g. .sections has position:relative which would
+    // otherwise make section offsetTops relative to it instead of the page)
+    function docTop(el) {
+      return el.getBoundingClientRect().top + window.scrollY;
+    }
+    function scrollToNextSection() {
+      // figure out which section we're actually looking at right now
+      const scrollPos = window.scrollY + innerHeight * 0.3;
+      let activeIdx = 0;
+      sectionOrder.forEach((id, i) => {
+        const el = sectionEl(id);
+        if (el && docTop(el) <= scrollPos) activeIdx = i;
+      });
+      const nextIdx = (activeIdx + 1) % sectionOrder.length;
+      goToSection(sectionOrder[nextIdx]);
+    }
+    nextSectionBtn.addEventListener('click', scrollToNextSection);
+
+    // deep-link on load: scroll to the section matching the URL hash, e.g. #projects
+    if (location.hash) {
+      const id = location.hash.slice(1).toLowerCase();
+      const target = sectionEl(id);
+      if (target) {
+        currentSectionIndex = Math.max(0, sectionOrder.indexOf(id));
+        requestAnimationFrame(() => target.scrollIntoView({ behavior: 'auto', block: 'start' }));
+      }
+    }
+
+    // ---------- render loop ----------
+    function animate() {
+      requestAnimationFrame(animate);
+      yaw   += (targetYaw   - yaw)   * 0.10;
+      pitch += (targetPitch - pitch) * 0.10;
+      if (!dragging && autoSpin) targetYaw += 0.0014;
+      viewGroup.rotation.y = yaw;
+      viewGroup.rotation.x = pitch;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+  </script>
+</body>
+</html>
